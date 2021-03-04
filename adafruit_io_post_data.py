@@ -3,9 +3,10 @@ import time
 from Adafruit_IO import *
 import math
 from random import randint
+import os
 
-username = 't_project3333'
-AIO_KEY = 'aio_xdNJ73mixS0cUZ1m40x2rgjByV28'
+username = os.environ["IO_USERNAME"]
+AIO_KEY = os.environ["IO_KEY"]
 
 aio = Client(username, AIO_KEY)
 GAIN = 1         # see ads1015/1115 documentation for potential values.

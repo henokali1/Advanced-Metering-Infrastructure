@@ -3,10 +3,13 @@ import time
 import Adafruit_ADS1x15
 from Adafruit_IO import *
 import math
+import os
+
+
 # Create an ADS1115 ADC (16-bit) instance..
 adc1 = Adafruit_ADS1x15.ADS1115()
-username = 't_project3333'
-AIO_KEY = 'aio_xdNJ73mixS0cUZ1m40x2rgjByV28'
+username = os.environ["IO_USERNAME"]
+AIO_KEY = os.environ["IO_KEY"]
 
 aio = Client(username, AIO_KEY)
 GAIN = 1         # see ads1015/1115 documentation for potential values.
