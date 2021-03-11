@@ -1,68 +1,48 @@
-#!/usr/bin/env python3
 import time
+import pickle
+import statistics
+from os import listdir
+from os.path import isfile, join
+
+
+# Import the ADS1x15 module.
 import Adafruit_ADS1x15
-from Adafruit_IO import *
-import math
-import os
 
 
-# Create an ADS1115 ADC (16-bit) instance..
-adc1 = Adafruit_ADS1x15.ADS1115()
-username = os.environ["IO_USERNAME"]
-AIO_KEY = os.environ["IO_KEY"]
+# Create an ADS1115 ADC (16-bit) instance.
+adc = Adafruit_ADS1x15.ADS1115()
 
-aio = Client(username, AIO_KEY)
-GAIN = 1         # see ads1015/1115 documentation for potential values.
-samples = 5      # number of samples taken from ads1115
-places = int(2)    # set rounding
-# create a while loop to monitor the current and voltage and send to Adafruit io.
-while True:
-    # reset variables
-    count = int(0)
-    datai = []
-    datav = []
-    maxIValue = 0
-    maxVValue = 0
-    IrmsA0 = 0
-    VrmsA1 = 0
-    ampsA0 = 0
-    voltsA1 =0
-    kilowatts = float(0)
-    # since we are measuring an AC circuit the output of SCT-013 wand the voltage sensor will be a sinewave.
-    # in order to calculate amps from sinewave we will need to get the peak voltage
-    # from each input and use root mean square formula (RMS)
-    # this loop will take 200 samples from each input and give you the highest (peak)
-    for count in range(5):        
-        datai.insert(count, (abs(adc1.read_adc(0, gain=GAIN))))
-        datav.insert(count, (abs(adc1.read_adc(1, gain=GAIN))))
-        # see if you have a new maxValue
-        print (datai[count])
-        if datai[count] > maxIValue:
-            maxIValue = datai[count]           
-        if datav[count] > maxVValue:
-            maxVValue = datav[count]
-            print("new maxv value:")
-            print(maxVValue)               
-    #calculate current using the sampled data
-    # I used a sct-013 that is calibrated for 1000mV output @ 30A. Usually has 30A/1V printed on it.
-    print("proceeding")
-    IrmsA0 = float(maxIValue / float(2047) * 30)
-    IrmsA0 = round(IrmsA0, places)
-    ampsA0 = IrmsA0 / math.sqrt(2)  # RMS formula to get current reading to match what an ammeter shows.
-    ampsA0 = round(ampsA0, places)
-    # Calculate voltage
-    VrmsA1 = float(maxVValue * 1100/ float(2047))
-    VrmsA1 = round(VrmsA1, places)
-    VrmsA1 = 230.0
-    voltsA1 = VrmsA1 / math.sqrt(2)  # RMS formula to get voltage reading to match what an voltmeter shows.
-    voltsA1 = round(voltsA1, places)
-    print('Voltage: {0}'.format(voltsA1))
-    print('Current: {0}'.format(ampsA0))
-    #calculate power
-    power = round(ampsA0 * voltsA1,places)
-    print('Power: {0}'.format(power))
-    #post data to adafruit.io
-    # energyconsumption = aio.feeds('energyconsumption')
-    # aio.send_data('energyconsumption', power)
-    # Wait before repeating loop
-    time.sleep(30)
+GAIN = 1
+
+def measure_power():
+    m=2251.84
+    b=13093.87
+    voltage=236.0
+    cntr = 0
+    readings=[]
+    samples = 50
+    while(cntr < samples):
+        sensor_reading = abs(adc.read_adc(1, gain=GAIN))
+        cntr += 1
+        readings.append(sensor_reading)
+        time.sleep(0.02)
+    max_reading = max(readings)
+    print(f'max_reading: {max_reading}')
+
+    current_rms=(max_reading-b)/m
+    current_rms=round(current_rms, 3)
+    if(current_rms < 0.009):
+        current_rms = 0.0
+    print(f'current_rms: {current_rms}A')
+    power=voltage*current_rms
+    power=round(power, 2)
+    if power < 1:
+        power = 0
+    return {'power': power, 'current_rms':current_rms}
+
+
+while 1:
+    pwr = measure_power()
+    power = pwr['power']
+    current_rms = pwr['current_rms']
+    print(f'power: {power} W,\tCurrent(RMS): {current_rms} A')
