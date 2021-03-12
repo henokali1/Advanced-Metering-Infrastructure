@@ -17,6 +17,8 @@ def measure_power():
     cntr = 0
     readings=[]
     samples = 50
+    min_current = 0.025
+    min_power = 1.0
     while(cntr < samples):
         sensor_reading = abs(adc.read_adc(1, gain=GAIN))
         cntr += 1
@@ -26,11 +28,11 @@ def measure_power():
 
     current_rms=(max_reading-b)/m
     current_rms=round(current_rms, 3)
-    if(current_rms < 0.009):
+    if(current_rms < min_current):
         current_rms = 0.0
     power=voltage*current_rms
     power=round(power, 2)
-    if power < 1:
+    if power < min_power:
         power = 0
     return {'power': power, 'current_rms':current_rms}
 

@@ -1,42 +1,76 @@
-import time
-import pickle
-import statistics
-from os import listdir
-from os.path import isfile, join
-
-
 # Import the ADS1x15 module.
 import Adafruit_ADS1x15
+import time
+import board
+import busio
+import adafruit_character_lcd.character_lcd_i2c as character_lcd
 
+# Modify this if you have a different sized Character LCD
+lcd_columns = 20
+lcd_rows = 4
 
 # Create an ADS1115 ADC (16-bit) instance.
 adc = Adafruit_ADS1x15.ADS1115()
 
 GAIN = 1
+# Initialise I2C bus.
+i2c = busio.I2C(board.SCL, board.SDA)
+
+# Initialise the lcd class
+lcd = character_lcd.Character_LCD_I2C(i2c, lcd_columns, lcd_rows)
+
+# Turn backlight on
+lcd.backlight = True
+lcd.clear()
+# Print a two line message
+lcd.message = "Initializing......"
+time.sleep(5)
+lcd.clear()
+
+m=2251.84
+b=13093.87
+voltage=236.0
+samples = 50
+min_current = 0.025
+min_power = 1.0
+
+
+
+def update_lcd_msg(l1="",l2="",l3="",l4=""):
+    l1=f"Power: {l1} W"
+    l1t = l1+" "*(19-len(l1)) + "\n"
+    l2=f"Set Voltage: {l2}v"
+    l2t = l2+" "*(19-len(l2)) + "\n"
+    l3=f"Current(RMS): {l3}A"
+    l3t = l3+" "*(19-len(l3)) + "\n"
+    l4t = l4+" "*(19-len(l4))
+    # lcd.clear()
+    # Print a two line message
+    lcd.message = l1t+l2t+l3t+l4t
 
 def measure_power():
     m=2251.84
     b=13093.87
     voltage=236.0
+    samples = 50
+    min_current = 0.025
+    min_power = 1.0
     cntr = 0
     readings=[]
-    samples = 50
     while(cntr < samples):
         sensor_reading = abs(adc.read_adc(1, gain=GAIN))
         cntr += 1
         readings.append(sensor_reading)
         time.sleep(0.02)
     max_reading = max(readings)
-    print(f'max_reading: {max_reading}')
 
     current_rms=(max_reading-b)/m
     current_rms=round(current_rms, 3)
-    if(current_rms < 0.009):
+    if(current_rms < min_current):
         current_rms = 0.0
-    print(f'current_rms: {current_rms}A')
     power=voltage*current_rms
     power=round(power, 2)
-    if power < 1:
+    if power < min_power:
         power = 0
     return {'power': power, 'current_rms':current_rms}
 
@@ -46,3 +80,4 @@ while 1:
     power = pwr['power']
     current_rms = pwr['current_rms']
     print(f'power: {power} W,\tCurrent(RMS): {current_rms} A')
+    update_lcd_msg(str(power), str(voltage), str(current_rms), "")
