@@ -88,5 +88,8 @@ while 1:
     update_lcd_msg(str(power), str(voltage), str(current_rms), str(total_energy))
     d={"current": current_rms, 'set_voltage': voltage, 'tot_energy': total_energy, 'pwr': power}
     url = f'http://3.137.144.214:5573/log_data/{d}'
-    r = requests.get(url)
-    print(d)
+    try:
+        r = requests.get(url)
+        print(d)
+    except:
+        print('Network Err')
