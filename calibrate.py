@@ -30,24 +30,31 @@ adc = Adafruit_ADS1x15.ADS1115()
 
 GAIN = 1
 def read_samples():
-    samples = 600
+    samples = 12
     cntr = 0
     readings = []
-    current = 0.901
+    current = 0.239
     # Main loop.
     while cntr < samples:
         # Read all the ADC channel values in a list.
         values = [0]*4
-        val = adc.read_adc(1, gain=GAIN)
+        
         rem = samples - cntr
         cntr += 1
-        print(f'Remaining: {rem}\t{val}')
-        readings.append(val)
-        time.sleep(0.1)
+        ns = []
+        
+        for i in range(50):
+            val = adc.read_adc(0, gain=GAIN)
+            ns.append(val)
+            time.sleep(0.02)
+            # print(f'{i+1} samples taken')
+        readings.append(max(ns))
+        print(f'Remaining: {rem}')
 
     avg = statistics.mean(readings)
     fn = str(int(time.time()))
     val = {'current': current, 'avg': avg}
+    
     write_file(fn, val)
 
 def files_in_dir():
@@ -65,8 +72,8 @@ def extract_readings():
         current.append(v['current'])
         sensor_reading.append(v['avg'])
     
-    print(f'current: {current}')
-    print(f'sensor_reading: {sensor_reading}')
+    print(f'    x = {current}')
+    print(f'    y = {sensor_reading}')
 
 def plt():
     # importing the required module 
@@ -96,4 +103,5 @@ def plt():
     # function to show the plot 
     plt.show() 
 
+# read_samples()
 extract_readings()

@@ -30,6 +30,9 @@ lcd.clear()
 
 m=2251.84
 b=13093.87
+m1 = 108.72
+b1 = 12955.26
+
 voltage=236.0
 samples = 50
 min_current = 0.2
@@ -53,8 +56,6 @@ def update_lcd_msg(l1="",l2="",l3="",l4=""):
     lcd.message = l1t+l2t+l3t+l4t
 
 def measure_power():
-    m=2251.84
-    b=13093.87
     voltage=236.0
     samples = 50
     min_power = 1.0
@@ -67,7 +68,7 @@ def measure_power():
         time.sleep(0.02)
     max_reading = max(readings)
 
-    current_rms=(max_reading-b)/m
+    current_rms=(max_reading-b1)/m1
     current_rms=round(current_rms, 3)
     if(current_rms < min_current):
         current_rms = 0.0
@@ -88,5 +89,8 @@ while 1:
     update_lcd_msg(str(power), str(voltage), str(current_rms), str(total_energy))
     d={"current": current_rms, 'set_voltage': voltage, 'tot_energy': total_energy, 'pwr': power}
     url = f'http://3.137.144.214:5573/log_data/{d}'
-    r = requests.get(url)
-    print(d)
+    try:
+        r = requests.get(url)
+        print(d)
+    except:
+        print('Network Err')

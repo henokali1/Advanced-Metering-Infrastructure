@@ -13,5 +13,7 @@ GAIN = 1
 while True:
     # Read all the ADC channel values in a list.
     values = [0]*4
-    print(adc.read_adc(1, gain=GAIN))
+    az = adc.read_adc(0, gain=GAIN)
+    ao = adc.read_adc(1, gain=GAIN)
+    print(f'A0: {az}\tA1: {ao}')
     time.sleep(0.5)
