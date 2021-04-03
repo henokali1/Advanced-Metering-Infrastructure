@@ -62,10 +62,10 @@ def log(request, d=''):
     except:
         tot_energy_consumed = 0.0
 
-    # if tot_energy_consumed > 1:
-    #     tot_energy_consumed = round(tot_energy_consumed, 6)
-    # else:
-    #     tot_energy_consumed = round(tot_energy_consumed, 6)
+    if tot_energy_consumed > 1:
+        tot_energy_consumed = round(tot_energy_consumed, 2)
+    else:
+        tot_energy_consumed = round(tot_energy_consumed, 6)
     args = {
         'logs': logs,
         'start': start,
@@ -103,9 +103,7 @@ def lattest_data(request):
     diff = current_ts - last_ts
     if diff <= max_ts_diff:
         args['current'] = str(last_log.current) + ' A'
-        # args['tot_enery'] = str(round(last_log.tot_enery, 6)) + ' kWh'
-        print('last_log.tot_enery Energy: ', last_log.tot_enery)
-        args['tot_enery'] = last_log.tot_enery
+        args['tot_enery'] = str(round(last_log.tot_enery, 6)) + ' kWh'
         args['set_voltage'] = str(last_log.set_voltage) + ' V'
         args['pwr'] = str(round(last_log.pwr, 2)) + ' W'
 
