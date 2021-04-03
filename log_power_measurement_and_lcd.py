@@ -46,7 +46,7 @@ def update_lcd_msg(l1="",l2="",l3="",l4=""):
     l2t = l2+" "*(19-len(l2)) + "\n"
     l3=f"Current(RMS): {l3}A"
     l3t = l3+" "*(19-len(l3)) + "\n"
-    l4 = f"Energy: {l4} kw"
+    l4 = f"Energy: {l4} kWh"
     l4t = l4+" "*(19-len(l4))
     # lcd.clear()
     # Print a two line message
@@ -83,7 +83,7 @@ while 1:
     power = pwr['power']
     current_rms = pwr['current_rms']
     totla_power += power
-    total_energy = round(totla_power/1000.0, 2)
+    total_energy = round(totla_power/(1000.0*3600), 6)
     print(f'power: {power} W,\tCurrent(RMS): {current_rms} A')
     update_lcd_msg(str(power), str(voltage), str(current_rms), str(total_energy))
     d={"current": current_rms, 'set_voltage': voltage, 'tot_energy': total_energy, 'pwr': power}
